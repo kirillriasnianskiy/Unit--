@@ -389,4 +389,231 @@
     <div id="leads-block" class="slider-block" style="display:none">
       <div class="slider-header">
         <span class="slider-name">Лидов от блогера / мес</span>
-        <span class="slider-value" id="leadsLabel">5
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="number" id="leadsInput" min="1" max="2000" value="50"
+            oninput="syncLeadsFromInput()"
+            style="width:72px;background:var(--surface2);border:1px solid var(--accent);border-radius:4px;color:var(--accent);font-family:var(--display);font-size:15px;font-weight:700;text-align:right;padding:2px 6px;outline:none;">
+          <span class="slider-value" id="leadsLabel" style="display:none">50</span>
+        </div>
+      </div>
+      <input type="range" min="1" max="2000" step="1" value="50" oninput="syncLeadsFromSlider()" id="leadsManual">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="slider-block">
+      <div class="slider-header">
+        <span class="slider-name">Цена продукта блогера</span>
+        <span class="slider-value" id="priceLabel">€300</span>
+      </div>
+      <input type="range" min="50" max="3000" step="50" value="300" oninput="calc()" id="price">
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-header">
+        <span class="slider-name">Конверсия лид → продажа</span>
+        <span class="slider-value" id="crLabel">10%</span>
+      </div>
+      <input type="range" min="1" max="50" step="1" value="10" oninput="calc()" id="cr">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="slider-block">
+      <div class="slider-header">
+        <span class="slider-name">Твоя доля с выручки</span>
+        <span class="slider-value" id="shareLabel">35%</span>
+      </div>
+      <input type="range" min="10" max="50" step="1" value="35" oninput="calc()" id="share">
+    </div>
+
+    <div class="slider-block">
+      <div class="slider-header">
+        <span class="slider-name">Зарплата менеджера продаж</span>
+        <span class="slider-value" id="salaryLabel">€600</span>
+      </div>
+      <input type="range" min="200" max="3000" step="100" value="600" oninput="calc()" id="salary">
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div class="panel-title">Результат · месяц</div>
+
+    <div class="big-number" id="profitBig">−€865</div>
+    <div class="big-label">Твоя прибыль за месяц</div>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-card-label">Лидов</div>
+        <div class="metric-card-val" id="mLeads">67</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-label">Продаж</div>
+        <div class="metric-card-val" id="mSales">7</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-label">Выручка</div>
+        <div class="metric-card-val" id="mRevenue">€2 100</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-label">Твоя доля</div>
+        <div class="metric-card-val" id="mYour">€735</div>
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <div class="breakdown-row">
+        <span class="breakdown-label">Доля с продаж</span>
+        <span class="breakdown-val pos" id="bRevenue">+€735</span>
+      </div>
+      <div class="breakdown-row" id="ad-row">
+        <span class="breakdown-label">Расходы на рекламу</span>
+        <span class="breakdown-val neg" id="bAd">−€1 000</span>
+      </div>
+      <div class="breakdown-row">
+        <span class="breakdown-label">Зарплата менеджера</span>
+        <span class="breakdown-val neg" id="bSalary">−€600</span>
+      </div>
+      <div class="breakdown-total">
+        <span>Итог</span>
+        <span id="bTotal" style="color:var(--red)">−€865</span>
+      </div>
+    </div>
+
+    <div class="verdict" id="verdict">...</div>
+
+    <div class="roas-bar-wrap" id="roas-wrap">
+      <div class="roas-bar-label">
+        <span>ROAS (окупаемость рекламы)</span>
+        <span id="roasVal">0.7x</span>
+      </div>
+      <div class="roas-track">
+        <div class="roas-fill" id="roas-fill" style="width:35%"></div>
+      </div>
+      <div class="roas-bar-label" style="margin-top:4px;">
+        <span style="color:var(--red)">0x</span>
+        <span style="color:var(--yellow)">1x безубыток</span>
+        <span style="color:var(--green)">3x+</span>
+      </div>
+    </div>
+
+    <div class="tip-box" style="margin-top:20px;">
+      <strong>Совет:</strong> Если модель уходит в минус — предложи блогеру покрывать рекламный бюджет из общей выручки <em>до</em> раздела. Так ты устраняешь риск и всё равно получаешь свою долю.
+    </div>
+  </div>
+</div>
+
+<script>
+  let mode = 'both';
+
+  function syncLeadsFromSlider() {
+    const v = document.getElementById('leadsManual').value;
+    document.getElementById('leadsInput').value = v;
+    calc();
+  }
+
+  function syncLeadsFromInput() {
+    let v = parseInt(document.getElementById('leadsInput').value) || 1;
+    v = Math.max(1, Math.min(2000, v));
+    document.getElementById('leadsManual').value = v;
+    calc();
+  }
+
+  function setMode(m) {
+    mode = m;
+    document.getElementById('btn-both').classList.toggle('active', m === 'both');
+    document.getElementById('btn-sales').classList.toggle('active', m === 'sales');
+    document.getElementById('ad-block').style.display = m === 'both' ? '' : 'none';
+    document.getElementById('cpl-block').style.display = m === 'both' ? '' : 'none';
+    document.getElementById('leads-block').style.display = m === 'sales' ? '' : 'none';
+    document.getElementById('ad-row').style.display = m === 'both' ? '' : 'none';
+    document.getElementById('roas-wrap').style.display = m === 'both' ? '' : 'none';
+    if (m === 'sales') {
+      document.getElementById('share').value = 20;
+      document.getElementById('shareLabel').textContent = '20%';
+    } else {
+      document.getElementById('share').value = 35;
+      document.getElementById('shareLabel').textContent = '35%';
+    }
+    calc();
+  }
+
+  function fmt(n) {
+    return '€' + Math.round(Math.abs(n)).toLocaleString('ru-RU');
+  }
+
+  function calc() {
+    const ad     = +document.getElementById('ad').value;
+    const cpl    = +document.getElementById('cpl').value;
+    const price  = +document.getElementById('price').value;
+    const cr     = +document.getElementById('cr').value;
+    const share  = +document.getElementById('share').value;
+    const salary = +document.getElementById('salary').value;
+    const leadsManual = +document.getElementById('leadsManual').value;
+
+    document.getElementById('adLabel').textContent    = fmt(ad);
+    document.getElementById('cplLabel').textContent   = fmt(cpl);
+    document.getElementById('priceLabel').textContent = fmt(price);
+    document.getElementById('crLabel').textContent    = cr + '%';
+    document.getElementById('shareLabel').textContent = share + '%';
+    document.getElementById('salaryLabel').textContent= fmt(salary);
+
+    const leads    = mode === 'both' ? Math.round(ad / cpl) : leadsManual;
+    const sales    = Math.round(leads * cr / 100);
+    const revenue  = sales * price;
+    const yourCut  = revenue * share / 100;
+    const adCost   = mode === 'both' ? ad : 0;
+    const profit   = yourCut - adCost - salary;
+
+    document.getElementById('mLeads').textContent   = leads;
+    document.getElementById('mSales').textContent   = sales;
+    document.getElementById('mRevenue').textContent = fmt(revenue);
+    document.getElementById('mYour').textContent    = fmt(yourCut);
+
+    document.getElementById('bRevenue').textContent = '+' + fmt(yourCut);
+    document.getElementById('bAd').textContent      = '−' + fmt(ad);
+    document.getElementById('bSalary').textContent  = '−' + fmt(salary);
+
+    const profitEl = document.getElementById('profitBig');
+    const totalEl  = document.getElementById('bTotal');
+    const sign = profit >= 0 ? '+' : '−';
+    profitEl.textContent = sign + fmt(profit);
+    totalEl.textContent  = sign + fmt(profit);
+
+    if (profit >= 500) {
+      profitEl.style.color = 'var(--green)';
+      totalEl.style.color  = 'var(--green)';
+    } else if (profit >= 0) {
+      profitEl.style.color = 'var(--yellow)';
+      totalEl.style.color  = 'var(--yellow)';
+    } else {
+      profitEl.style.color = 'var(--red)';
+      totalEl.style.color  = 'var(--red)';
+    }
+
+    const verdict = document.getElementById('verdict');
+    if (profit >= 500) {
+      verdict.className = 'verdict good';
+      verdict.textContent = 'Модель работает. Прибыль покрывает все расходы. Можно масштабировать — добавляй следующего блогера.';
+    } else if (profit >= 0) {
+      verdict.className = 'verdict warn';
+      verdict.textContent = 'Выходишь в ноль. Подними долю, улучши конверсию или снизи CPL — иначе не окупается при росте команды.';
+    } else {
+      verdict.className = 'verdict bad';
+      verdict.textContent = 'Убыток при текущих параметрах. Реклама должна вычитаться из общей выручки до раздела — или блогер платит фикс авансом.';
+    }
+
+    if (mode === 'both') {
+      const roas = revenue > 0 ? yourCut / ad : 0;
+      const roasPct = Math.min(roas / 3 * 100, 100);
+      document.getElementById('roasVal').textContent = roas.toFixed(2) + 'x';
+      document.getElementById('roas-fill').style.width = roasPct + '%';
+      const fc = roas >= 1 ? (roas >= 2 ? 'var(--green)' : 'var(--yellow)') : 'var(--red)';
+      document.getElementById('roas-fill').style.background = fc;
+    }
+  }
+
+  calc();
+</script>
+</body>
+</html>
